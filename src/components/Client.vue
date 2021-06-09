@@ -1,6 +1,11 @@
 <template>
   <div class="client">
-    <Message :messages_prop="messages" :clientId_prop="clientId" />
+    <div class="buttons-inline">
+      <button class="exit" @click="$emit('clientExitEvent')" style="margin-right: 20px">exit</button>
+      <button class="exit" @click="$emit('clientRemoveEvent', client)">remove user</button>
+    </div>
+
+    <Message :messages_prop="messages" :clientId_prop="client.name" />
 
     <div class="send-message">
       <input
@@ -20,7 +25,7 @@ import Message from "./Message.vue";
 
 export default {
   name: "Client",
-  props: ["messages", "clientId"],
+  props: ["messages", "client"],
   components: {
     Message,
   },
@@ -33,7 +38,7 @@ export default {
     newMessage() {
       this.$emit("addMessasgeEvent", {
         text: this.newMessageText,
-        senderId: this.clientId,
+        senderId: this.client.name,
       });
       this.newMessageText = "";
     },
@@ -70,8 +75,19 @@ export default {
 }
 
 .send-message__button {
-  background-color: #22B872;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+
+.buttons-inline {
+  display: flex;
+}
+
+.buttons-inline > button {
+  flex: 1;
+}
+
+.exit {
+  margin-bottom: 20px;
 }
 </style>

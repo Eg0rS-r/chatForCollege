@@ -1,51 +1,64 @@
 <template>
   <div class="wrapper-chat">
-    <div class="wrapper-user-enter" v-if="!isFirstClientEnter">
+    <div class="wrapper-user-enter" v-if="!firstClientLogin.isEnter">
       <div class="user-enter user-enter--blue">
         <input
           class="user-enter__input"
           type="text"
-          v-model="FirstClientName"
+          v-model="firstClientLogin.name"
           placeholder="Username"
-          @keyup.enter="isFirstClientEnter = !isFirstClientEnter"
         />
-        <button
-          class="user-enter__button"
-          @click="isFirstClientEnter = !isFirstClientEnter"
-        >
+        <input
+          class="user-enter__input"
+          type="password"
+          v-model="firstClientLogin.pass"
+          placeholder="Password"
+          style="margin-top: 14px"
+        />
+        <button class="user-enter__button" @click="userEnter(firstClientLogin)">
           Enter
         </button>
       </div>
     </div>
     <Client
-      v-if="isFirstClientEnter"
+      v-if="firstClientLogin.isEnter"
       :messages="messages"
-      :clientId="FirstClientName"
+      :client="firstClientLogin"
       @addMessasgeEvent="addMessasge"
+      @clientExitEvent="firstClientLogin.isEnter = false"
+      @clientRemoveEvent="clientremove"
     />
     <div class="split"></div>
-    <div class="wrapper-user-enter" v-if="!isSecondClientEnter">
+    <div class="wrapper-user-enter" v-if="!secondClientLogin.isEnter">
       <div class="user-enter user-enter--yellow">
         <input
           class="user-enter__input"
           type="text"
-          v-model="SecondClientName"
+          v-model="secondClientLogin.name"
           placeholder="Username"
-          @keyup.enter="isSecondClientEnter = !isSecondClientEnter"
+        />
+        <input
+          class="user-enter__input"
+          type="password"
+          v-model="secondClientLogin.pass"
+          placeholder="Password"
+          style="margin-top: 14px"
         />
         <button
           class="user-enter__button"
-          @click="isSecondClientEnter = !isSecondClientEnter"
+          @click="userEnter(secondClientLogin)"
         >
           Enter
         </button>
       </div>
     </div>
     <Client
-      v-if="isSecondClientEnter"
+      v-if="secondClientLogin.isEnter"
       :messages="messages"
-      :clientId="SecondClientName"
+      :client="secondClientLogin"
+      @clientExitEvent="secondClientLogin.isEnter = false"
       @addMessasgeEvent="addMessasge"
+      @clientRemoveEvent="clientremove" 
     />
   </div>
 </template>
@@ -60,14 +73,34 @@ export default {
   },
   data() {
     return {
-      isFirstClientEnter: false,
-      FirstClientName: "Username1",
-      isSecondClientEnter: false,
-      SecondClientName: "Username2",
+      firstClientLogin: {
+        name: "",
+        pass: "",
+        isEnter: false,
+        messages: [],
+        id: 1,
+      },
+      secondClientLogin: {
+        name: "",
+        pass: "",
+        isEnter: false,
+        messages: [],
+        id: 1,
+      },
+      reg: [],
       messages: [],
     };
   },
   methods: {
+    clientremove(user) {
+      this.reg = this.reg.filter((item) => {
+        return item.name !== user.name;
+      });
+      this.messages = this.messages.filter((item) => {
+        return item.senderId !== user.name;
+      });
+      user.isEnter = false
+    },
     addMessasge(messageInfo) {
       this.messages.push({
         senderId: messageInfo.senderId,
@@ -76,19 +109,30 @@ export default {
         senderName: "Second",
       });
     },
-  },
-  computed: {
-    FirstClient() {
-      return this.msg.filter((item) => {
-        return item.senderId === 1;
-      });
+    clientExit(isClientEnter) {
+      isClientEnter = false;
+      console.log(isClientEnter);
     },
-    SecondClient() {
-      return this.msg.filter((item) => {
-        return item.senderId === 2;
+    userEnter(user) {
+      let check = false;
+      this.reg.forEach((item) => {
+        if (item.name === user.name && item.password === user.pass) {
+          check = !check;
+          item.messages = this.messages.filter((element) => {
+            return element.senderId === item.name;
+          });
+        }
       });
+      if (!check) {
+        this.reg.push({
+          name: user.name,
+          password: user.pass,
+        });
+      }
+      user.isEnter = true;
     },
   },
+  computed: {},
 };
 </script>
 
@@ -143,7 +187,7 @@ input {
 }
 
 .user-enter--blue {
-  background-color: #2E81FD;
+  background-color: #2e81fd;
 }
 
 .user-enter--yellow {
